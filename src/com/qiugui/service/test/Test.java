@@ -10,7 +10,7 @@ import com.qiugui.service.IMyservice;
 
 public class Test {
 	public static void main(String[] args) throws MalformedURLException {
-		URL url=new URL("http://127.0.0.1:8888/ns?wsdl");
+		URL url=new URL("http://127.0.0.1:7777/ns?wsdl");
 		QName qName = new QName("http://service.qiugui.com/", "MyserviceImplService");
 		Service service = Service.create(url, qName);
 		
