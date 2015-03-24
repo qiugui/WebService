@@ -26,6 +26,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.qiugui.service.User;
@@ -166,8 +167,44 @@ import com.qiugui.service.User;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void test04(){
+		String wsurl = "http://127.0.0.1:8888/ns?wsdl";
+		String namespace = "http://service.qiugui.com/";
 		
-		
+		try {
+			URL url = new URL(wsurl);
+			QName sName = new QName(namespace, "MyserviceImplService");
+			Service service = Service.create(url, sName);
+			
+			Dispatch<SOAPMessage> dispatch = service.createDispatch(new QName(namespace, "MyserviceImplPort"), 
+					SOAPMessage.class, Service.Mode.MESSAGE);
+			
+			SOAPMessage message = MessageFactory.newInstance().createMessage();
+			SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
+			SOAPBody body = envelope.getBody();
+			
+			QName qName = new QName(namespace, "list", "nn");
+			body.addBodyElement(qName);
+			message.writeTo(System.out);
+			
+			System.out.println("\n"+"invoking...");
+			SOAPMessage response = dispatch.invoke(message);
+			response.writeTo(System.out);
+			
+			Document doc = response.getSOAPPart().getEnvelope().getBody().extractContentAsDocument();
+			NodeList nodeList = (NodeList)doc.getElementsByTagName("user");
+			JAXBContext jxt = JAXBContext.newInstance(User.class);
+			for(int i =0;i<nodeList.getLength();i++){
+				Node node = nodeList.item(i);
+				User user =(User) jxt.createUnmarshaller().unmarshal(node);
+				System.out.println("\n"+user.getNickname());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
 
