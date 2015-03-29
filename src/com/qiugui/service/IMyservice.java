@@ -19,8 +19,9 @@ public interface IMyservice {
 	public User addUser(@WebParam(name="user")User user);
 	
 	@WebResult(name="user")
-	public User login(@WebParam(name="username")String username,@WebParam(name="password")String password);
+	public User login(@WebParam(name="username")String username, 
+			@WebParam(name="password")String password) throws UserException;
 	
 	@WebResult(name="user")
-	public List<User> list();
+	public List<User> list(@WebParam(header=true,name="authInfo")String authInfo);
 }

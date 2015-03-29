@@ -1,5 +1,6 @@
  package com.webservice.soap;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
@@ -11,6 +12,8 @@ import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPBodyElement;
 import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 import javax.xml.transform.Source;
@@ -20,6 +23,7 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.Dispatch;
 import javax.xml.ws.Service;
+import javax.xml.ws.soap.SOAPFaultException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -186,6 +190,13 @@ import com.qiugui.service.User;
 			SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
 			SOAPBody body = envelope.getBody();
 			
+			
+			//处理header信息
+			SOAPHeader header = envelope.getHeader();
+			if(header==null) header=envelope.addHeader();
+			QName hName = new QName(namespace, "authInfo", "nn");
+			header.addHeaderElement(hName).setValue("toubuxinxi");
+			
 			QName qName = new QName(namespace, "list", "nn");
 			body.addBodyElement(qName);
 			message.writeTo(System.out);
@@ -204,6 +215,44 @@ import com.qiugui.service.User;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test05(){
+		String wsurl = "http://127.0.0.1:8888/ns?wsdl";
+		String namespace = "http://service.qiugui.com/";
+		
+		try {
+			URL url = new URL(wsurl);
+			QName sName = new QName(namespace, "MyserviceImplService");
+			Service service = Service.create(url, sName);
+			
+			Dispatch<SOAPMessage> dispatch = service.createDispatch(new QName(namespace, "MyserviceImplPort"), 
+					SOAPMessage.class, Service.Mode.MESSAGE);
+			
+			SOAPMessage message = MessageFactory.newInstance().createMessage();
+			SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
+			SOAPBody body = envelope.getBody();
+			
+			QName qName = new QName(namespace, "login", "nn");
+			SOAPBodyElement element = body.addBodyElement(qName);
+			element.addChildElement("username").setValue("qiugugi");
+			element.addChildElement("password").setValue("1231231312");
+			message.writeTo(System.out);
+			
+			System.out.println("\n"+"invoking...");
+			SOAPMessage response = dispatch.invoke(message);
+			response.writeTo(System.out);
+			
+		} catch (SOAPFaultException e) {
+			System.out.println(e.getMessage());
+		} catch (SOAPException e) {
+			 e.printStackTrace();
+			 
+		} catch (IOException e) {
+			 e.printStackTrace();
+			 
 		}
 	}
 }

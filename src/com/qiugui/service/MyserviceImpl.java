@@ -3,9 +3,11 @@ package com.qiugui.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jws.HandlerChain;
 import javax.jws.WebService;
 
 @WebService(endpointInterface="com.qiugui.service.IMyservice")
+@HandlerChain(file="handler-chain.xml")
 public class MyserviceImpl implements IMyservice {
 
 	private static List<User> users = new ArrayList<User>();
@@ -37,19 +39,20 @@ public class MyserviceImpl implements IMyservice {
 	}
 
 	@Override
-	public User login(String username, String password) {
+	public User login(String username, String password) throws UserException {
 		for (User user : users){
 			if (username.equals(user.getUsername()) && password.equals(user.getPassword())){
 				return user;
 			}
 		}
-		return null;
+		throw new UserException("用户不存在！");
 		 
 	}
 
 	@Override
-	public List<User> list() {
-		 return users;	 
+	public List<User> list(String authInfo) {
+		System.out.println("进入List"+authInfo); 
+		return users;	 
 	}
 
 }
